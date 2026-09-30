@@ -5,16 +5,16 @@ Official buffered RFC 4180-oriented CSV support for Strut.
 ## API
 
 ```strut
-CsvOptions csv_options();
-string[][] csv_parse(string input) : CsvError;
-string[][] csv_parse_bytes(bytes input) : CsvError;
-CsvDocument csv_parse_document(bytes input, CsvOptions options) : CsvError;
-string csv_stringify(string[][] rows) : CsvError;
-string csv_stringify_document(CsvDocument document, CsvOptions options) : CsvError;
-string[][] csv_read(string path) : (FilesystemError, CsvError);
-CsvDocument csv_read_document(string path, CsvOptions options) : (FilesystemError, CsvError);
-void csv_write(string path, string[][] rows) : (FilesystemError, CsvError);
-void csv_write_document(string path, CsvDocument document, CsvOptions options) : (FilesystemError, CsvError);
+function csv_options() -> CsvOptions;
+function csv_parse(string input) -> string[][] : CsvError;
+function csv_parse_bytes(bytes input) -> string[][] : CsvError;
+function csv_parse_document(bytes input, CsvOptions options) -> CsvDocument : CsvError;
+function csv_stringify(string[][] rows) -> string : CsvError;
+function csv_stringify_document(CsvDocument document, CsvOptions options) -> string : CsvError;
+function csv_read(string path) -> string[][] : (FilesystemError, CsvError);
+function csv_read_document(string path, CsvOptions options) -> CsvDocument : (FilesystemError, CsvError);
+function csv_write(string path, string[][] rows) -> void : (FilesystemError, CsvError);
+function csv_write_document(string path, CsvDocument document, CsvOptions options) -> void : (FilesystemError, CsvError);
 ```
 
 ## Usage
