@@ -8,6 +8,21 @@ function main() -> int : (FilesystemError, CsvError) {
     print(rows[1][2] == "");
     print(rows[2][1]);
     print(csv_stringify(rows) == "name,notes,empty\r\nAda,\"comma, quote \"\"ok\"\"\",\r\nLin,\"line one\nline two\",x");
+    string[][] one_empty := [[""]];
+    string empty_encoded := csv_stringify(one_empty);
+    print(empty_encoded == "\"\"");
+    string[][] empty_roundtrip := csv_parse(empty_encoded);
+    print(empty_roundtrip.length());
+    print(empty_roundtrip[0].length());
+    print(empty_roundtrip[0][0] == "");
+    print(csv_parse("").length());
+    string[][] blank := csv_parse("\r\n");
+    print(blank.length());
+    print(blank[0].length());
+    print(blank[0][0] == "");
+    string[][] trailing := csv_parse("a,b,");
+    print(trailing[0].length());
+    print(trailing[0][2] == "");
 
     CsvOptions options := csv_options();
     options.delimiter = ";";
@@ -21,6 +36,12 @@ function main() -> int : (FilesystemError, CsvError) {
     print(document.rows[0][0]);
     print(document.rows[0][1]);
 
+    CsvOptions keep_bom := csv_options();
+    keep_bom.delimiter = ";";
+    keep_bom.strip_utf8_bom = false;
+    CsvDocument bom_document := csv_parse_document(read_bytes("header.csv"), keep_bom);
+    print(bytes.from_string(bom_document.rows[0][0]).length());
+
     csv_write("copy.csv", rows);
     string[][] copied := csv_read("copy.csv");
     print(copied.length());
@@ -28,6 +49,40 @@ function main() -> int : (FilesystemError, CsvError) {
 
     try {
         csv_parse("a,\"unterminated");
+        print("missing error");
+    } catch (CsvError err) {
+        print(err.code);
+    }
+    try {
+        csv_parse("bad\"quote,x");
+        print("missing error");
+    } catch (CsvError err) {
+        print(err.code);
+    }
+    try {
+        csv_parse("\"ok\"trailing,x");
+        print("missing error");
+    } catch (CsvError err) {
+        print(err.code);
+    }
+    try {
+        csv_parse("a\rb");
+        print("missing error");
+    } catch (CsvError err) {
+        print(err.code);
+    }
+    try {
+        CsvOptions crlf_only := csv_options();
+        crlf_only.allow_lf = false;
+        csv_parse_document(bytes.from_string("a\nb"), crlf_only);
+        print("missing error");
+    } catch (CsvError err) {
+        print(err.code);
+    }
+    try {
+        CsvOptions invalid := csv_options();
+        invalid.delimiter = "\"";
+        csv_parse_document(bytes.from_string("a"), invalid);
         print("missing error");
     } catch (CsvError err) {
         print(err.code);

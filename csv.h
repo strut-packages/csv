@@ -243,7 +243,11 @@ function csv_internal_stringify_row(string[] row, uint_8 delimiter) -> string {
         if (!first) {
             result = result + separator;
         }
-        result = result + csv_internal_encode_field(field, delimiter);
+        if (row.length() == 1 && field == "") {
+            result = result + "\"\"";
+        } else {
+            result = result + csv_internal_encode_field(field, delimiter);
+        }
         first = false;
     }
     return result;

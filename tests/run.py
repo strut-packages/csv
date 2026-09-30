@@ -9,8 +9,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = (ROOT / "tests" / "package_test.p").read_text()
 EXPECTED = (
-    "3\nAda\ncomma, quote \"ok\"\n1\nline one\nline two\n1\n"
-    "2\nname\nname\n1\nAda\nLovelace\n3\nline one\nline two\n2\n3\n1000\n值-999\n"
+    "3\nAda\ncomma, quote \"ok\"\n1\nline one\nline two\n1\n1\n1\n1\n1\n"
+    "0\n1\n1\n1\n3\n1\n2\nname\nname\n1\nAda\nLovelace\n7\n"
+    "3\nline one\nline two\n2\n2\n2\n2\n2\n1\n3\n1000\n值-999\n"
 )
 
 
