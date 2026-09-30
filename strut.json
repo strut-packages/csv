@@ -1,7 +1,7 @@
 {
   "name": "csv",
   "version": "0.1.0",
-  "entry": "csv.h",
+  "entry": "src/csv.h",
   "description": "Buffered RFC 4180-oriented CSV parsing for Strut.",
   "license": "MIT",
   "repository": "https://github.com/strut-packages/csv",

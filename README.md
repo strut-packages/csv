@@ -5,16 +5,16 @@ Official buffered RFC 4180-oriented CSV support for Strut.
 ## API
 
 ```strut
-function csv_options() -> CsvOptions;
-function csv_parse(string input) -> string[][] : CsvError;
-function csv_parse_bytes(bytes input) -> string[][] : CsvError;
-function csv_parse_document(bytes input, CsvOptions options) -> CsvDocument : CsvError;
-function csv_stringify(string[][] rows) -> string : CsvError;
-function csv_stringify_document(CsvDocument document, CsvOptions options) -> string : CsvError;
-function csv_read(string path) -> string[][] : (FilesystemError, CsvError);
-function csv_read_document(string path, CsvOptions options) -> CsvDocument : (FilesystemError, CsvError);
-function csv_write(string path, string[][] rows) -> void : (FilesystemError, CsvError);
-function csv_write_document(string path, CsvDocument document, CsvOptions options) -> void : (FilesystemError, CsvError);
+options := csv.options();
+rows := csv.parse(input);
+rows := csv.parse_bytes(input_bytes);
+document := csv.parse_document(input_bytes, options);
+text := csv.stringify(rows);
+text := csv.stringify_document(document, options);
+rows := csv.read(path);
+document := csv.read_document(path, options);
+csv.write(path, rows);
+csv.write_document(path, document, options);
 ```
 
 ## Usage
@@ -23,7 +23,7 @@ function csv_write_document(string path, CsvDocument document, CsvOptions option
 include <csv>;
 
 function main() -> int : CsvError {
-    string[][] rows := csv_parse("name,role\r\nAda,engineer");
+    string[][] rows := csv.parse("name,role\r\nAda,engineer");
     print(rows[1][0]);
     return 0;
 }

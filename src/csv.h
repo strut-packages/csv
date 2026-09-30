@@ -18,7 +18,7 @@ struct CsvDocument {
     string[][] rows;
 }
 
-function csv_options() -> CsvOptions {
+function csv_internal_options() -> CsvOptions {
     return CsvOptions {
         delimiter: ",",
         allow_lf: true,
@@ -54,7 +54,7 @@ function csv_internal_decode_quoted(bytes input, int_64 begin, int_64 end) -> st
     return decoded.slice(0, used).to_string();
 }
 
-function csv_parse_document(bytes input, CsvOptions options) -> CsvDocument : CsvError {
+function csv_internal_parse_document(bytes input, CsvOptions options) -> CsvDocument : CsvError {
     csv_internal_validate_options(options);
     bytes delimiter_value := bytes.from_string(options.delimiter);
     uint_8 delimiter := delimiter_value[0];
@@ -190,13 +190,13 @@ function csv_parse_document(bytes input, CsvOptions options) -> CsvDocument : Cs
     return CsvDocument { header: header, rows: rows };
 }
 
-function csv_parse_bytes(bytes input) -> string[][] : CsvError {
-    CsvDocument document := csv_parse_document(input, csv_options());
+function csv_internal_parse_bytes(bytes input) -> string[][] : CsvError {
+    CsvDocument document := csv_internal_parse_document(input, csv_internal_options());
     return document.rows;
 }
 
-function csv_parse(string input) -> string[][] : CsvError {
-    return csv_parse_bytes(bytes.from_string(input));
+function csv_internal_parse(string input) -> string[][] : CsvError {
+    return csv_internal_parse_bytes(bytes.from_string(input));
 }
 
 function csv_internal_encode_field(string field, uint_8 delimiter) -> string {
@@ -253,7 +253,7 @@ function csv_internal_stringify_row(string[] row, uint_8 delimiter) -> string {
     return result;
 }
 
-function csv_stringify_document(CsvDocument document, CsvOptions options) -> string : CsvError {
+function csv_internal_stringify_document(CsvDocument document, CsvOptions options) -> string : CsvError {
     csv_internal_validate_options(options);
     bytes delimiter_value := bytes.from_string(options.delimiter);
     uint_8 delimiter := delimiter_value[0];
@@ -283,29 +283,83 @@ function csv_stringify_document(CsvDocument document, CsvOptions options) -> str
     return result;
 }
 
-function csv_stringify(string[][] rows) -> string : CsvError {
+function csv_internal_stringify(string[][] rows) -> string : CsvError {
     CsvDocument document := CsvDocument { header: [], rows: rows };
-    return csv_stringify_document(document, csv_options());
+    return csv_internal_stringify_document(document, csv_internal_options());
 }
 
-function csv_read_document(string path, CsvOptions options) -> CsvDocument : (FilesystemError, CsvError) {
-    return csv_parse_document(read_bytes(path), options);
+function csv_internal_read_document(string path, CsvOptions options) -> CsvDocument : (FilesystemError, CsvError) {
+    return csv_internal_parse_document(read_bytes(path), options);
 }
 
-function csv_read(string path) -> string[][] : (FilesystemError, CsvError) {
-    return csv_parse_bytes(read_bytes(path));
+function csv_internal_read(string path) -> string[][] : (FilesystemError, CsvError) {
+    return csv_internal_parse_bytes(read_bytes(path));
 }
 
-function csv_write_document(
+function csv_internal_write_document(
 string path,
 CsvDocument document,
 CsvOptions options
 ) -> void : (FilesystemError, CsvError) {
-    write_file(path, csv_stringify_document(document, options));
+    write_file(path, csv_internal_stringify_document(document, options));
     return;
 }
 
-function csv_write(string path, string[][] rows) -> void : (FilesystemError, CsvError) {
-    write_file(path, csv_stringify(rows));
+function csv_internal_write(string path, string[][] rows) -> void : (FilesystemError, CsvError) {
+    write_file(path, csv_internal_stringify(rows));
     return;
 }
+
+struct CsvFacade {
+    function options() -> CsvOptions;
+    function parse(string input) -> string[][] : CsvError;
+    function parse_bytes(bytes input) -> string[][] : CsvError;
+    function parse_document(bytes input, CsvOptions options) -> CsvDocument : CsvError;
+    function stringify(string[][] rows) -> string : CsvError;
+    function stringify_document(CsvDocument document, CsvOptions options) -> string : CsvError;
+    function read(string path) -> string[][] : (FilesystemError, CsvError);
+    function read_document(string path, CsvOptions options) -> CsvDocument : (FilesystemError, CsvError);
+    function write(string path, string[][] rows) -> void : (FilesystemError, CsvError);
+    function write_document(
+    string path,
+    CsvDocument document,
+    CsvOptions options
+    ) -> void : (FilesystemError, CsvError);
+}
+
+function CsvFacade::options() -> CsvOptions { return csv_internal_options(); }
+function CsvFacade::parse(string input) -> string[][] : CsvError { return csv_internal_parse(input); }
+function CsvFacade::parse_bytes(bytes input) -> string[][] : CsvError { return csv_internal_parse_bytes(input); }
+function CsvFacade::parse_document(bytes input, CsvOptions options) -> CsvDocument : CsvError {
+    return csv_internal_parse_document(input, options);
+}
+function CsvFacade::stringify(string[][] rows) -> string : CsvError { return csv_internal_stringify(rows); }
+function CsvFacade::stringify_document(CsvDocument document, CsvOptions options) -> string : CsvError {
+    return csv_internal_stringify_document(document, options);
+}
+function CsvFacade::read(string path) -> string[][] : (FilesystemError, CsvError) { return csv_internal_read(path); }
+function CsvFacade::read_document(
+string path,
+CsvOptions options
+) -> CsvDocument : (FilesystemError, CsvError) {
+    return csv_internal_read_document(path, options);
+}
+function CsvFacade::write(
+string path,
+string[][] rows
+) -> void : (FilesystemError, CsvError) {
+    csv_internal_write(path, rows);
+    return;
+}
+function CsvFacade::write_document(
+string path,
+CsvDocument document,
+CsvOptions options
+) -> void : (FilesystemError, CsvError) {
+    csv_internal_write_document(path, document, options);
+    return;
+}
+
+function csv_internal_facade() -> CsvFacade { return CsvFacade {}; }
+
+CsvFacade csv := csv_internal_facade();
